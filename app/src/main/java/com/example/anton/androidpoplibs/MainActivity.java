@@ -1,24 +1,36 @@
 package com.example.anton.androidpoplibs;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import com.arellomobile.mvp.MvpAppCompatActivity;
+import com.arellomobile.mvp.presenter.InjectPresenter;
+import com.arellomobile.mvp.presenter.ProvidePresenter;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
-public class MainActivity extends AppCompatActivity implements ActivityMain {
+public class MainActivity extends MvpAppCompatActivity implements ActivityMain {
+
     @BindView(R.id.text_view)
     TextView textView;
     @BindView(R.id.edit_text)
     EditText editText;
-    Presenter presenter;
+
     Observer<String> observer;
+
+    @InjectPresenter
+    Presenter presenter;
+
+    @ProvidePresenter
+    public Presenter createPresenter() {
+        return new Presenter();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements ActivityMain {
 
             @Override
             public void onNext(String s) {
-                textView.setText(s);
+                setText(s);
             }
 
             @Override
@@ -55,7 +67,8 @@ public class MainActivity extends AppCompatActivity implements ActivityMain {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                presenter.setText(s.toString()).subscribe(observer);
+                presenter.CharIsEntered(s.toString());
+                presenter.getObservable().subscribe(observer);
             }
 
             @Override
@@ -67,5 +80,6 @@ public class MainActivity extends AppCompatActivity implements ActivityMain {
 
     @Override
     public void setText(String text) {
+        textView.setText(text);
     }
 }

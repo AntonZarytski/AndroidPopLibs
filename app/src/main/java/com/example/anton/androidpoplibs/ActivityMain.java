@@ -1,5 +1,7 @@
 package com.example.anton.androidpoplibs;
 
-public interface ActivityMain {
+import com.arellomobile.mvp.MvpView;
+
+public interface ActivityMain extends MvpView {
     void setText(String text);
 }
