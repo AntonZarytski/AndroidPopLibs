@@ -17,11 +17,11 @@ import io.reactivex.disposables.Disposable;
 public class MainActivity extends MvpAppCompatActivity implements MainView {
     @InjectPresenter
     MainPresenter presenter;
-    @BindView(R.id.btn_one)
+    @BindView(R.id.btn_first)
     Button button1;
-    @BindView(R.id.btn_two)
+    @BindView(R.id.btn_second)
     Button button2;
-    @BindView(R.id.btn_three)
+    @BindView(R.id.btn_third)
     Button button3;
     private Observer<Integer> observer1;
     private Observer<Integer> observer2;
@@ -68,18 +68,18 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
         return new MainPresenter();
     }
 
-    @OnClick({R.id.btn_one})
-    public void buttonOneClick(Button button) {
+    @OnClick({R.id.btn_first})
+    public void buttonOneClick() {
         presenter.onButtonOneClick();
     }
 
-    @OnClick({R.id.btn_two})
-    public void buttonTwoClick(Button button) {
+    @OnClick({R.id.btn_second})
+    public void buttonTwoClick() {
         presenter.onButtonTwoClick();
     }
 
-    @OnClick({R.id.btn_three})
-    public void buttonThreeClick(Button button) {
+    @OnClick({R.id.btn_third})
+    public void buttonThreeClick() {
         presenter.onButtonThreeClick();
     }
 
