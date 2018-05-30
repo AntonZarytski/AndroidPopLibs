@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">androidLibHomework</string>
+    <string name="app_name">homework3</string>
+    <string name="choose_photo">Выбрать фото</string>
+    <string name="convert">конвертировать</string>
 </resources>
