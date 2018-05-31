@@ -13,6 +13,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -20,22 +21,20 @@ import android.widget.Toast;
 import com.arellomobile.mvp.MvpAppCompatActivity;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.concurrent.Callable;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
-/**
- * В активити все делал, вроде работает, а в mvp вообще не понимаю что куда вставлять((
- * и в данном случае интерфейс непонимаю зачем нужен тут
- */
-public class MainActivity extends MvpAppCompatActivity implements MainView {
+public class MainActivity extends AppCompatActivity {
     private static final int LOADED_PHOTO = 345;
     private static final int READ_STORAGE = 467;
-    private MainPresenter presenter;
     @BindView(R.id.choose_photo_btn)
     Button choosePhotoBtn;
     @BindView(R.id.choosen_photo_iv)
@@ -50,7 +49,6 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        presenter = new MainPresenter();
         waiting.animate()
                 .setDuration(0)
                 .alpha(0);
@@ -84,10 +82,10 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
             if (columnIndex < 0)
                 return;
 
-            presenter.savePathPicture(cursor.getString(columnIndex));
+            String path = cursor.getString(columnIndex);
             cursor.close();
 
-            Bitmap photo = BitmapFactory.decodeFile(presenter.getPathPicture());
+            Bitmap photo = BitmapFactory.decodeFile(path);
 
             choosenPhoto.clearColorFilter();
             choosenPhoto.setImageBitmap(photo);
@@ -96,27 +94,37 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
 
     @OnClick(R.id.convert_to_png_btn)
     public void convertToPng() {
-        presenter.convertPhotoBackground(getCallable()).subscribe(new Observer() {
+        convertPhotoBackground().subscribe(new Observer<Boolean>() {
             @Override
             public void onSubscribe(Disposable d) {
 
             }
 
             @Override
-            public void onNext(Object o) {
-                //TODO анимация
+            public void onNext(Boolean aBoolean) {
+                if (!aBoolean) {
+                    throw new RuntimeException("error while convert");
+                }
+                waiting.animate().alpha(1);
+                waiting.animate().rotation(90);
             }
 
             @Override
             public void onError(Throwable e) {
-                //TODO конец анимации
+
             }
 
             @Override
             public void onComplete() {
-                //TODO конец анимации
+                waiting.animate().alpha(0);
             }
         });
+    }
+
+    private Observable convertPhotoBackground() {
+        return Observable.fromCallable(getCallable())
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io());
     }
 
     @NonNull
@@ -128,8 +136,20 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
                 if (temp == null) {
                     return false;
                 }
-                presenter.setSavedPath(new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "savedBitmap.png").toString());
-                return temp.compress(Bitmap.CompressFormat.PNG, 100, presenter.convert(new File(presenter.getSavedPath())));
+                File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "savedBitmap.png");
+                FileOutputStream fos = null;
+                try {
+                    try {
+                        fos = new FileOutputStream(file);
+                        temp.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                        return true;
+                    } finally {
+                        if (fos != null) fos.close();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return false;
             }
         };
     }
@@ -145,13 +165,5 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
         } else {
             Toast.makeText(this, "Добавьте разрешение", Toast.LENGTH_LONG).show();
         }
-    }
-
-    @Override
-    public void getFile() {
-    }
-
-    @Override
-    public void writeFile() {
     }
 }
