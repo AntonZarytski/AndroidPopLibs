@@ -1,5 +1,6 @@
 package com.example.anton.androidlibhomework;
 
+import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
 
 import java.io.File;
@@ -9,11 +10,17 @@ import java.util.concurrent.Callable;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 
-public class MainPresenter extends MvpPresenter {
+@InjectViewState
+public class MainPresenter extends MvpPresenter<MainView> {
     FileModel model;
 
     public MainPresenter() {
         this.model = new FileModel();
+    }
+
+    @Override
+    protected void onFirstViewAttach() {
+        super.onFirstViewAttach();
     }
     public void savePathPicture(String path){
         model.setPhotoPath(path);

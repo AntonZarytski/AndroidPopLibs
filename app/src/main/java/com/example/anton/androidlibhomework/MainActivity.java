@@ -148,12 +148,10 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
     }
 
     @Override
-    public File getFile() {
-        return null;
+    public void getFile() {
     }
 
     @Override
-    public File writeFile() {
-        return null;
+    public void writeFile() {
     }
 }

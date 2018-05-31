@@ -1,7 +1,5 @@
 package com.example.anton.androidlibhomework;
 
-import java.io.File;
-
 public class FileModel {
     String photoPath;
     String pathSave;
