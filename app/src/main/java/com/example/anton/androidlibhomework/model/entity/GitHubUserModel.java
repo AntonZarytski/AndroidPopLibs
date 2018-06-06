@@ -1,4 +1,4 @@
-package com.example.anton.androidlibhomework;
+package com.example.anton.androidlibhomework.model.entity;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

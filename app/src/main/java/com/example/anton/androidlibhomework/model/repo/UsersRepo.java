@@ -1,4 +1,8 @@
-package com.example.anton.androidlibhomework;
+package com.example.anton.androidlibhomework.model.repo;
+
+import com.example.anton.androidlibhomework.model.api.ApiHolder;
+import com.example.anton.androidlibhomework.model.entity.GitHubUserModel;
+import com.example.anton.androidlibhomework.model.entity.GitHubUsersRepos;
 
 import java.util.List;
 

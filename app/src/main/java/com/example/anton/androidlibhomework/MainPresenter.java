@@ -4,6 +4,9 @@ import android.annotation.SuppressLint;
 
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
+import com.example.anton.androidlibhomework.model.entity.GitHubUserModel;
+import com.example.anton.androidlibhomework.model.entity.GitHubUsersRepos;
+import com.example.anton.androidlibhomework.model.repo.UsersRepo;
 
 import java.util.List;
 
@@ -45,7 +48,6 @@ public class MainPresenter extends MvpPresenter<MainView> {
                     public void accept(Throwable throwable) throws Exception {
                         MainPresenter.this.getViewState().setUsernameText(throwable.getMessage());
                         MainPresenter.this.getViewState().setProgresVisibility(false);
-
                     }
                 });
 

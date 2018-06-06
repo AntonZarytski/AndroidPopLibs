@@ -8,12 +8,18 @@ import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.arellomobile.mvp.MvpAppCompatActivity;
 import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.arellomobile.mvp.presenter.ProvidePresenter;
+import com.example.anton.androidlibhomework.model.api.ApiServiceGetUser;
+import com.example.anton.androidlibhomework.model.entity.GitHubUserModel;
+import com.example.anton.androidlibhomework.model.image.IimageLoader;
+import com.example.anton.androidlibhomework.model.image.android.GlideImageLoader;
+import com.example.anton.androidlibhomework.model.image.android.PicassoImageLoader;
 
 import java.io.IOException;
 
@@ -34,7 +40,12 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
     ProgressBar progressBar;
     @BindView(R.id.tv_load)
     TextView textViewLoad;
+    @BindView(R.id.image_loaded_iv)
+    ImageView loadedImageView;
+
     ApiServiceGetUser requestUserInfo;
+
+    IimageLoader<ImageView> iimageLoader;
 
     @InjectPresenter
     MainPresenter presenter;
@@ -45,6 +56,8 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         progressBar.setVisibility(View.GONE);
+//        iimageLoader = new PicassoImageLoader();
+        iimageLoader = new GlideImageLoader();
     }
 
     @OnClick({R.id.btn_load})
@@ -96,7 +109,7 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
 
     @Override
     public void loadImage(String url) {
-        textViewLoad.append("ImageURI: " + url + "\n");
+        iimageLoader.loadInto(url, loadedImageView);
     }
 
     @Override
