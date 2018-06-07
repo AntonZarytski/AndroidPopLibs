@@ -1,4 +1,4 @@
-package com.example.anton.androidlibhomework;
+package com.example.anton.androidlibhomework.views;
 
 import com.arellomobile.mvp.MvpView;
 

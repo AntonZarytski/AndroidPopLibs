@@ -3,7 +3,9 @@ package com.example.anton.androidlibhomework.model.entity;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class GitHubUsersRepos {
+import java.io.Serializable;
+
+public class GitHubUsersRepos implements Serializable {
 
     @SerializedName("id")
     @Expose
@@ -222,6 +224,10 @@ public class GitHubUsersRepos {
     @Expose
     private String defaultBranch;
 
+    public GitHubUsersRepos(Integer id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 
     public Integer getId() {
         return id;

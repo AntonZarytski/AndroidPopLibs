@@ -4,6 +4,8 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GitHubUserModel implements Serializable {
     @SerializedName("login")
@@ -100,6 +102,22 @@ public class GitHubUserModel implements Serializable {
     @Expose
     private String updatedAt;
 
+
+    private List<GitHubUsersRepos> repos = new ArrayList<>();
+
+    public GitHubUserModel(String login, String imageUrl, String reposUrl) {
+        this.login = login;
+        this.avatarUrl = imageUrl;
+        this.reposUrl = reposUrl;
+    }
+
+    public List<GitHubUsersRepos> getRepos() {
+        return repos;
+    }
+
+    public void setRepos(List<GitHubUsersRepos> repos) {
+        this.repos = repos;
+    }
     public String getLogin() {
         return login;
     }

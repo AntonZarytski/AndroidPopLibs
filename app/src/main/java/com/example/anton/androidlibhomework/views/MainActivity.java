@@ -1,10 +1,6 @@
-package com.example.anton.androidlibhomework;
+package com.example.anton.androidlibhomework.views;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,21 +11,16 @@ import android.widget.TextView;
 import com.arellomobile.mvp.MvpAppCompatActivity;
 import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.arellomobile.mvp.presenter.ProvidePresenter;
-import com.example.anton.androidlibhomework.model.api.ApiServiceGetUser;
-import com.example.anton.androidlibhomework.model.entity.GitHubUserModel;
+import com.example.anton.androidlibhomework.R;
+import com.example.anton.androidlibhomework.model.api.ApiService;
 import com.example.anton.androidlibhomework.model.image.IimageLoader;
 import com.example.anton.androidlibhomework.model.image.android.GlideImageLoader;
-import com.example.anton.androidlibhomework.model.image.android.PicassoImageLoader;
-
-import java.io.IOException;
+import com.example.anton.androidlibhomework.presenters.MainPresenter;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class MainActivity extends MvpAppCompatActivity implements MainView {
     @BindView(R.id.edit_text)
@@ -43,7 +34,7 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
     @BindView(R.id.image_loaded_iv)
     ImageView loadedImageView;
 
-    ApiServiceGetUser requestUserInfo;
+    ApiService requestUserInfo;
 
     IimageLoader<ImageView> iimageLoader;
 
@@ -65,38 +56,6 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
         presenter.loadUserData(editText.getText().toString());
     }
 
-    public boolean checkConnection(@NonNull Context context) {
-        NetworkInfo networkInfo = ((ConnectivityManager) context.getSystemService(
-                Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
-        return networkInfo != null && networkInfo.isConnected();
-    }
-
-    private void downloadOneUrl(Call<GitHubUserModel> call) throws IOException {
-        call.enqueue(new Callback<GitHubUserModel>() {
-            @Override
-            public void onResponse(Call<GitHubUserModel> call, Response<GitHubUserModel> response) {
-                if (response.isSuccessful()) {
-                    if (response != null) {
-                        GitHubUserModel user = response.body();
-                        textViewLoad.append("\n Login = " + user.getLogin()
-                                + "\n Id  = " + user.getId()
-                                + "\n URIAvatar = " + user.getAvatarUrl());
-                    }
-                } else {
-                    textViewLoad.setText("OnResponse error" + response.code());
-                }
-                progressBar.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onFailure(Call<GitHubUserModel> call, Throwable t) {
-                textViewLoad.setText("OnFailure error" + t.getMessage());
-                progressBar.setVisibility(View.GONE);
-            }
-        });
-
-    }
-
     @ProvidePresenter
     public MainPresenter provideMainPresenter() {
         return new MainPresenter(AndroidSchedulers.mainThread());
@@ -115,6 +74,7 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
     @Override
     public void setId(String id) {
         textViewLoad.append("ImageURI: " + id + "\n");
+
     }
 
     @Override
