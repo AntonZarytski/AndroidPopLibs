@@ -1,12 +1,24 @@
 package com.example.anton.androidlibhomework.model.repo;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Environment;
+
 import com.example.anton.androidlibhomework.model.api.ApiHolder;
 import com.example.anton.androidlibhomework.model.entity.GitHubUserModel;
 import com.example.anton.androidlibhomework.model.entity.GitHubUsersRepos;
 import com.example.anton.androidlibhomework.model.entity.realm.RealmRepository;
 import com.example.anton.androidlibhomework.model.entity.realm.RealmUser;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -16,6 +28,8 @@ import io.realm.Realm;
 public class RealmUserRepo implements CacheWorker {
     public static final String USER_BOOK = "users";
     public static final String REPOS_BOOK = "repositories";
+    private final String pathToSaveImage = Environment.getExternalStorageDirectory().toString();
+
 
     @Override
     public Observable<GitHubUserModel> getUser(final String username) {
@@ -125,5 +139,39 @@ public class RealmUserRepo implements CacheWorker {
             realm.close();
             return gitHubUsersRepos;
         });
+    }
+
+    Bitmap loadImage(String filePath) {
+        InputStream fIn = null;
+        try {
+            File file = new File(filePath);
+            fIn = new FileInputStream(file);
+            Bitmap image = BitmapFactory.decodeStream(fIn);
+            return image;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    String saveImage(Bitmap image) {
+        OutputStream fOut = null;
+        Calendar calendar = Calendar.getInstance();
+        Date time = calendar.getTime();
+        try {
+            File file = new File(pathToSaveImage, Integer.toString(time.getYear()) +
+                    Integer.toString(time.getMonth()) + Integer.toString(time.getDay()) +
+                    Integer.toString(time.getHours()) + Integer.toString(time.getMinutes()) +
+                    Integer.toString(time.getSeconds()) + ".jpg");
+            fOut = new FileOutputStream(file);
+            image.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
+            fOut.flush();
+            fOut.close();
+            return file.toString();
+            // TODO регистрация в фотоальбоме. Можно ли в GlideImageLoader передать context? или как правильно сделать?
+//            MediaStore.Images.Media.insertImage(getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
+        } catch (Exception e) {
+            return "";
+        }
     }
 }

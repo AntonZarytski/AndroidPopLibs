@@ -42,9 +42,6 @@ public class GlideImageLoader implements IimageLoader<ImageView> {
                 String filePath = Paper.book(IMAGE_BOOK).read(md5);
                 Bitmap loadedImage = loadImage(filePath);
                 container.setImageBitmap(loadedImage);
-//                Glide.with(container.getContext())
-//                        .load(loadedImage)
-//                        .into(container);
             }
 
 
