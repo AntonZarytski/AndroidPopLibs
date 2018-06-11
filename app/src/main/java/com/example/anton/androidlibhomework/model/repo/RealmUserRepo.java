@@ -87,12 +87,15 @@ public class RealmUserRepo implements CacheWorker {
                 });
             }
             final RealmUser finalRealmUser = realm.where(RealmUser.class).equalTo("login", user.getLogin()).findFirst();
-            realm.executeTransaction(innerRealm -> {
-                finalRealmUser.getRepos().deleteAllFromRealm();
-                for (GitHubUsersRepos repository : gitHubUsersRepos) {
-                    RealmRepository realmRepository = innerRealm.createObject(RealmRepository.class, repository.getId());
-                    realmRepository.setName(repository.getName());
-                    finalRealmUser.getRepos().add(realmRepository);
+            realm.executeTransaction(new Realm.Transaction() {
+                @Override
+                public void execute(Realm innerRealm) {
+                    finalRealmUser.getRepos().deleteAllFromRealm();
+                    for (GitHubUsersRepos repository : gitHubUsersRepos) {
+                        RealmRepository realmRepository = innerRealm.createObject(RealmRepository.class, String.valueOf(repository.getId()));
+                        realmRepository.setName(repository.getName());
+                        finalRealmUser.getRepos().add(realmRepository);
+                    }
                 }
             });
             realm.close();

@@ -1,8 +1,8 @@
 package com.example.anton.androidlibhomework.model.image.android;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.widget.ImageView;
@@ -15,33 +15,38 @@ import com.example.anton.androidlibhomework.model.common.NetworkStatus;
 import com.example.anton.androidlibhomework.model.common.Utils;
 import com.example.anton.androidlibhomework.model.image.IimageLoader;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Calendar;
+import java.util.Date;
 
 import io.paperdb.Paper;
 import timber.log.Timber;
 
 public class GlideImageLoader implements IimageLoader<ImageView> {
     public static final String IMAGE_BOOK = "images";
-    private Activity activity;
-
+    private final String pathToSaveImage = Environment.getExternalStorageDirectory().toString();
 
     @SuppressLint("CheckResult")
     @Override
     public void loadInto(final String url, ImageView container) {
         //GlideApp позволяет делать доп операции с image маштаб, поворот, наклон и тд
         if (NetworkStatus.isOffline()) {
-//            String md5 = Utils.MD5(url);
-//            if (Paper.book(IMAGE_BOOK).contains(md5)) {
-//                byte[] bytes = Paper.book(IMAGE_BOOK).read(md5);
+            String md5 = Utils.MD5(url);
+            if (Paper.book(IMAGE_BOOK).contains(md5)) {
+                String filePath = Paper.book(IMAGE_BOOK).read(md5);
+                Bitmap loadedImage = loadImage(filePath);
+                container.setImageBitmap(loadedImage);
 //                Glide.with(container.getContext())
-//                        .load(bytes)
+//                        .load(loadedImage)
 //                        .into(container);
-//        }
-            Bitmap loadedImage = loadImage(url);
-            container.setImageBitmap(loadedImage);
+            }
+
 
         } else {
             GlideApp.with(container.getContext()).asBitmap().load(url).listener(new RequestListener<Bitmap>() {
@@ -53,44 +58,48 @@ public class GlideImageLoader implements IimageLoader<ImageView> {
 
                 @Override
                 public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-                    saveImage(resource, url);
-                    return true;
+                    String savedPath = saveImage(resource);
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    resource.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                    Paper.book(IMAGE_BOOK).write(Utils.MD5(url), savedPath);
+                    return false;
                 }
             }).into(container);
         }
     }
 
-    Bitmap loadImage(String url) {
-        String filePath = Paper.book(IMAGE_BOOK).read(Utils.MD5(url));
-        File file = new File(filePath);
-        ObjectInputStream ois;
+    Bitmap loadImage(String filePath) {
+        InputStream fIn = null;
         try {
-            ois = new ObjectInputStream(new FileInputStream(file));
-            Bitmap image = (Bitmap) ois.readObject();
+            File file = new File(filePath);
+            fIn = new FileInputStream(file);
+            Bitmap image = BitmapFactory.decodeStream(fIn);
             return image;
-        } catch (Exception e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    boolean saveImage(Bitmap image, String url) {
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), image.toString());
-        FileOutputStream fos = null;
+    String saveImage(Bitmap image) {
+        OutputStream fOut = null;
+        Calendar calendar = Calendar.getInstance();
+        Date time = calendar.getTime();
         try {
-            try {
-                fos = new FileOutputStream(file);
-                image.compress(Bitmap.CompressFormat.PNG, 100, fos);
-                Paper.book(IMAGE_BOOK).write(Utils.MD5(url), file.toString());
-                return true;
-            } finally {
-                if (fos != null) fos.close();
-            }
+            File file = new File(pathToSaveImage, Integer.toString(time.getYear()) +
+                    Integer.toString(time.getMonth()) + Integer.toString(time.getDay()) +
+                    Integer.toString(time.getHours()) + Integer.toString(time.getMinutes()) +
+                    Integer.toString(time.getSeconds()) + ".jpg");
+            fOut = new FileOutputStream(file);
+            image.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
+            fOut.flush();
+            fOut.close();
+            return file.toString();
+            // TODO регистрация в фотоальбоме. Можно ли в GlideImageLoader передать context? или как правильно сделать?
+//            MediaStore.Images.Media.insertImage(getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
         } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+            return "";
         }
     }
-
-
 }
+

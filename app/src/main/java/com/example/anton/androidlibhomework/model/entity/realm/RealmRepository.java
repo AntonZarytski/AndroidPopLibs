@@ -1,8 +1,10 @@
 package com.example.anton.androidlibhomework.model.entity.realm;
 
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 public class RealmRepository extends RealmObject {
+    @PrimaryKey
     String id;
     String name;
 
