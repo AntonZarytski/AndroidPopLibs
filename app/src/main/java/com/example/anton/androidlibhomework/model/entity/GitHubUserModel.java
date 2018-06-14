@@ -105,10 +105,9 @@ public class GitHubUserModel implements Serializable {
 
     private List<GitHubUsersRepos> repos = new ArrayList<>();
 
-    public GitHubUserModel(String login, String imageUrl, String reposUrl) {
+    public GitHubUserModel(String login, String imageUrl) {
         this.login = login;
         this.avatarUrl = imageUrl;
-        this.reposUrl = reposUrl;
     }
 
     public List<GitHubUsersRepos> getRepos() {

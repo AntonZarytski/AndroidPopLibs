@@ -3,13 +3,19 @@ package com.example.anton.androidlibhomework.views;
 import com.arellomobile.mvp.MvpView;
 
 public interface MainView extends MvpView {
-    void setUsernameText(String username);
+    void init();
 
-    void loadImage(String url);
+    void showAvatar(String avatarUrl);
 
-    void setId(String id);
+    void showError(String message);
 
-    void setRepos(String repoName, int i);
+    void setUsername(String username);
 
-    void setProgresVisibility(Boolean bolean);
+    void showLoading();
+
+    void hideLoading();
+
+    void updateRepoList();
+
+    void checkPermissions();
 }

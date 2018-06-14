@@ -2,12 +2,17 @@ package com.example.anton.androidlibhomework;
 
 import android.app.Application;
 
+import com.example.anton.androidlibhomework.di.AppComponent;
+import com.example.anton.androidlibhomework.di.DaggerAppComponent;
+import com.example.anton.androidlibhomework.di.modules.AppModule;
+
 import io.paperdb.Paper;
 import io.realm.Realm;
-import timber.log.Timber;
 
 public class App extends Application {
-    private static App instance = null;
+    private static App instance;
+
+    private AppComponent appComponent;
 
     public static App getInstance() {
         return instance;
@@ -17,16 +22,16 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
-        Timber.plant(new Timber.DebugTree());
         Paper.init(this);
-//        Configuration dbConfiguration = new Configuration.Builder(this)
-//                .setDatabaseName("MyDb.db")
-//                .addModelClass(AAUser.class)
-//                .addModelClass(AARepository.class)
-//                .create();
-
-//        ActiveAndroid.initialize(this);
         Realm.init(this);
 
+        appComponent = DaggerAppComponent.builder()
+                .appModule(new AppModule(this))
+                .build();
+
+    }
+
+    public AppComponent getAppComponent() {
+        return appComponent;
     }
 }

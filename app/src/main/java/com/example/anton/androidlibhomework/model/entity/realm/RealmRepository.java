@@ -5,8 +5,9 @@ import io.realm.annotations.PrimaryKey;
 
 public class RealmRepository extends RealmObject {
     @PrimaryKey
-    String id;
-    String name;
+    private String id;
+    private String name;
+
 
     public String getId() {
         return id;
