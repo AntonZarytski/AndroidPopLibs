@@ -29,6 +29,7 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 
 public class MainActivity extends MvpAppCompatActivity implements MainView {
@@ -82,6 +83,10 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
         return presenter;
     }
 
+    @OnClick({R.id.btn_load})
+    public void loadUsersList() {
+        presenter.loadUserData(userEditText.getText().toString());
+    }
     @Override
     public void init() {
         adapter = new RepoRVAdapter(presenter);
@@ -159,6 +164,6 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
     }
 
     private void onPermissionsGranted() {
-        presenter.onPermissionsGranted(userEditText.getText().toString());
+        presenter.onPermissionsGranted();
     }
 }

@@ -5,10 +5,12 @@ import android.annotation.SuppressLint;
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
 import com.example.anton.androidlibhomework.RepoRowView;
-import com.example.anton.androidlibhomework.model.cache.CacheWorker;
-import com.example.anton.androidlibhomework.model.cache.RealmUserRepo;
 import com.example.anton.androidlibhomework.model.entity.GitHubUserModel;
+import com.example.anton.androidlibhomework.model.repo.UsersRepo;
 import com.example.anton.androidlibhomework.views.MainView;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import io.reactivex.Scheduler;
 import timber.log.Timber;
@@ -16,17 +18,23 @@ import timber.log.Timber;
 @InjectViewState
 public class MainPresenter extends MvpPresenter<MainView> implements IRepoListPresenter {
     private Scheduler mainThreadScheduler;
-    //    private PaperUsersRepo userRepo;
-//    private AAUserRepo userRepo;
-//    private RealmUserRepo userRepo;
+    //    private CacheWorker userRepoRealm;
+    @Inject
+    @Named("ForRealm")
+    public UsersRepo userRepoRealm;
+    @Inject
+    @Named("ForPsper")
+    public UsersRepo userRepoPaper;
+    //    private PaperUsersRepo userRepoRealm;
+//    private AAUserRepo userRepoRealm;
+//    private RealmUserRepo userRepoRealm;
     private GitHubUserModel userModel;
-    private CacheWorker userRepo;
 
     public MainPresenter(Scheduler mainThreadScheduler) {
         this.mainThreadScheduler = mainThreadScheduler;
-//        userRepo = new PaperUsersRepo();
-//        userRepo = new AAUserRepo();
-        userRepo = new RealmUserRepo();
+//        userRepoRealm = new PaperUsersRepo();
+//        userRepoRealm = new AAUserRepo();
+//        userRepoRealm = new RealmUserRepo();
     }
 
     @Override
@@ -36,9 +44,9 @@ public class MainPresenter extends MvpPresenter<MainView> implements IRepoListPr
 
     @SuppressLint("CheckResult")
     public void loadUserData(final String userName) {
-        userRepo.getUser(userName).subscribe(user -> {
+        userRepoRealm.getUser(userName).subscribe(user -> {
             this.userModel = user;
-            userRepo.getUserRepos(user)
+            userRepoRealm.getUserRepos(user)
                     .observeOn(mainThreadScheduler)
                     .subscribe(userRepositories -> {
                         this.userModel.setRepos(userRepositories);
@@ -60,8 +68,8 @@ public class MainPresenter extends MvpPresenter<MainView> implements IRepoListPr
         });
     }
 
-    public void onPermissionsGranted(String username) {
-        loadUserData(username);
+    public void onPermissionsGranted() {
+
     }
 
     @Override

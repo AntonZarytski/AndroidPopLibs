@@ -35,7 +35,7 @@ public class RealmUserRepo implements CacheWorker {
             Realm realm = Realm.getDefaultInstance();
             RealmUser realmUser = realm.where(RealmUser.class).equalTo("login", username).findFirst();
             if (realmUser == null) {
-                e.onError(new RuntimeException("No user in cache"));
+                e.onError(new RuntimeException("No user in cacheRealm"));
             } else {
                 e.onNext(new GitHubUserModel(realmUser.getLogin(), realmUser.getAvatarUrl()));
             }
@@ -77,7 +77,7 @@ public class RealmUserRepo implements CacheWorker {
             Realm realm = Realm.getDefaultInstance();
             RealmUser realmUser = realm.where(RealmUser.class).equalTo("login", user.getLogin()).findFirst();
             if (realmUser == null) {
-                e.onError(new RuntimeException("No user in cache"));
+                e.onError(new RuntimeException("No user in cacheRealm"));
             } else {
                 List<GitHubUsersRepos> repos = new ArrayList<>();
                 for (RealmRepository realmRepository : realmUser.getRepositories()) {
