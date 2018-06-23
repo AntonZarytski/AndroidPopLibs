@@ -2,5 +2,11 @@
     <string name="app_name">homework3</string>
     <string name="choose_photo">Выбрать фото</string>
     <string name="convert">конвертировать</string>
+    <string name="permissons_required">Необходим доступ</string>
+    <string name="permissions_required_message">Пожалуйста, предоставьте доступ к запрашивемым функциям</string>
+    <string name="cancel">Отмена</string>
+    <string name="convertation_in_progress">Идет конвертация...</string>
+    <string name="convertation_success">Конвертация прошла успешно</string>
+    <string name="convertation_failed">Конвертация не удалась</string>
     <string name="appbar_scrolling_view_behavior" translatable="false">android.support.design.widget.AppBarLayout$ScrollingViewBehavior</string>
 </resources>

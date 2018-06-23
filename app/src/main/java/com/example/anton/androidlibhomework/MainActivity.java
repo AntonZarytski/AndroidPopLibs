@@ -1,169 +1,145 @@
 package com.example.anton.androidlibhomework;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.arellomobile.mvp.MvpAppCompatActivity;
-
 import java.io.File;
-import java.io.FileOutputStream;
-import java.util.concurrent.Callable;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.reactivex.Observable;
-import io.reactivex.Observer;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 
-public class MainActivity extends AppCompatActivity {
-    private static final int LOADED_PHOTO = 345;
-    private static final int READ_STORAGE = 467;
-    @BindView(R.id.choose_photo_btn)
-    Button choosePhotoBtn;
-    @BindView(R.id.choosen_photo_iv)
-    ImageView choosenPhoto;
-    @BindView(R.id.waiting)
-    ImageView waiting;
+public class MainActivity extends AppCompatActivity implements MainView {
+    private static final String[] permissons = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    private static final int PERMISSIONS_REQUEST_ID = 0;
+    private static final int PICK_IMAGE_REQUEST_ID = 1;
+
     @BindView(R.id.convert_to_png_btn)
-    Button convertBtn;
+    Button convertButton;
+
+    MainPresenter presenter;
+
+    Dialog convertProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        waiting.animate()
-                .setDuration(0)
-                .alpha(0);
-    }
-
-    @OnClick(R.id.choose_photo_btn)
-    public void choosePhoto() {
-        requestReadStoragePermission();
-    }
-
-    private void startPickActiivity() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        intent.setType("image/*");
-        startActivityForResult(intent, LOADED_PHOTO);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == LOADED_PHOTO && resultCode == RESULT_OK && data != null) {
-            Uri selectedImage = data.getData();
-            String[] filePathColumn = {MediaStore.Images.Media.DATA};
-            Cursor cursor = getContentResolver().query(selectedImage,
-                    filePathColumn, null, null, null);
-
-            if (cursor == null || cursor.getCount() < 1) {
-                return;
-            }
-
-            cursor.moveToFirst();
-            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            if (columnIndex < 0)
-                return;
-
-            String path = cursor.getString(columnIndex);
-            cursor.close();
-
-            Bitmap photo = BitmapFactory.decodeFile(path);
-
-            choosenPhoto.clearColorFilter();
-            choosenPhoto.setImageBitmap(photo);
-        }
+        presenter = new MainPresenter(this, AndroidSchedulers.mainThread(), new ImageConverterImpl(this));
     }
 
     @OnClick(R.id.convert_to_png_btn)
-    public void convertToPng() {
-        convertPhotoBackground().subscribe(new Observer<Boolean>() {
-            @Override
-            public void onSubscribe(Disposable d) {
-
-            }
-
-            @Override
-            public void onNext(Boolean aBoolean) {
-                if (!aBoolean) {
-                    throw new RuntimeException("error while convert");
-                }
-                waiting.animate().alpha(1);
-                waiting.animate().rotation(90);
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onComplete() {
-                waiting.animate().alpha(0);
-            }
-        });
-    }
-
-    private Observable convertPhotoBackground() {
-        return Observable.fromCallable(getCallable())
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io());
-    }
-
-    @NonNull
-    private Callable getCallable() {
-        return new Callable() {
-            @Override
-            public Boolean call() throws Exception {
-                Bitmap temp = ((BitmapDrawable) choosenPhoto.getDrawable()).getBitmap();
-                if (temp == null) {
-                    return false;
-                }
-                File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "savedBitmap.png");
-                FileOutputStream fos = null;
-                try {
-                    try {
-                        fos = new FileOutputStream(file);
-                        temp.compress(Bitmap.CompressFormat.PNG, 100, fos);
-                        return true;
-                    } finally {
-                        if (fos != null) fos.close();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return false;
-            }
-        };
-    }
-
-    private void requestReadStoragePermission() {
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_STORAGE);
+    public void convertButtonClick() {
+        presenter.convertButtonClick();
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == READ_STORAGE && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            startPickActiivity();
-        } else {
-            Toast.makeText(this, "Добавьте разрешение", Toast.LENGTH_LONG).show();
+    public void pickImage() {
+        if (!checkPermissions()) {
+            requestPermissions();
+            return;
         }
+
+        onPermissionsGranted();
+    }
+
+    @Override
+    public void showConvertProgressDialog() {
+        if (convertProgressDialog == null) {
+            convertProgressDialog = new AlertDialog.Builder(this)
+                    .setNegativeButton(R.string.cancel, (dialog, which) -> presenter.onConvertationCanceled())
+                    .setMessage(R.string.convertation_in_progress)
+                    .create();
+        }
+
+        convertProgressDialog.show();
+    }
+
+    @Override
+    public void dismissConvertProgressDialog() {
+        if (convertProgressDialog != null && convertProgressDialog.isShowing()) {
+            convertProgressDialog.dismiss();
+        }
+    }
+
+    @Override
+    public void showConvertationSuccessMessage() {
+        Toast.makeText(this, R.string.convertation_success, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showConvertationFailedMessage() {
+        Toast.makeText(this, R.string.convertation_failed, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSIONS_REQUEST_ID: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    onPermissionsGranted();
+                } else {
+                    new AlertDialog.Builder(this)
+                            .setTitle(R.string.permissons_required)
+                            .setMessage(R.string.permissions_required_message)
+                            .setPositiveButton("OK", (dialog, which) -> requestPermissions())
+                            .setOnCancelListener(dialog -> requestPermissions())
+                            .create()
+                            .show();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PICK_IMAGE_REQUEST_ID) {
+            if (resultCode == Activity.RESULT_OK) {
+                Uri imageUri = data.getData();
+                try {
+                    String outPath = getExternalFilesDir(Environment.DIRECTORY_PICTURES) + File.separator + "result.png";
+                    presenter.convertImage(imageUri.toString(), Uri.fromFile(new File(outPath)).toString());
+                } catch (Exception e) {
+                    //TODO : обработать ошибку как хочется
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+
+    private boolean checkPermissions() {
+        for (String permission : permissons) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void requestPermissions() {
+        ActivityCompat.requestPermissions(this, permissons, PERMISSIONS_REQUEST_ID);
+    }
+
+    private void onPermissionsGranted() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST_ID);
     }
 }
