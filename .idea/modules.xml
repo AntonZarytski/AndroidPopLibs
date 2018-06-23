@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/AndroidPopLibs.iml" filepath="$PROJECT_DIR$/AndroidPopLibs.iml" />
+      <module fileurl="file://$PROJECT_DIR$/AndroidPopularLibs.iml" filepath="$PROJECT_DIR$/AndroidPopularLibs.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
